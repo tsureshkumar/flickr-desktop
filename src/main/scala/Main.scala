@@ -90,8 +90,8 @@ object Main {
       val downloaded = download_photos(each_time)
       //val downloaded = List("abcd", "cdef", "ijkl")
       XML.saveFull(folder + "/background-1.xml", write_animation_xml(downloaded),"UTF-8", true, null)
-      //Thread.sleep(sync_every)
-      cond = false
+      Thread.sleep(sync_every)
+      //cond = false
     }
   }
 

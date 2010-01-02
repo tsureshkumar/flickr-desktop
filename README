@@ -27,7 +27,12 @@ appgarden to get a key for you.
 This is how you need to run this tool
 
 sbt
-> run <flickr.key> <folder.to.save> <number.of.photos.to.download> <wait.for.next.sync.in.ms>
+> run <flickr.key> <folder.to.save> <number.of.photos.to.download> \
+<wait.for.next.sync.in.ms>
+
+it runs as a daemon, and downloads photos every
+wait.for.next.sync.in.ms time. 
+
 
 
 References
