@@ -31,14 +31,16 @@ import scala.xml._
 
 object Main {
 
-  def anim_xml (in_folder: String => String, urls :Seq[String]) = {
+  def anim_xml (in_folder: String => String, urls :Seq[String], count: int, wait: int) = {
+    val transition_time:int = (wait / count) * 2 /100
+    val even_intervals:int = wait / count - transition_time
     def _anim_xml(prev :String, url :Seq[String]) : Seq[Node] = {
       url match {
         case x::y => {
             (if(prev != null)
-              (<transition><duration>1.0</duration><from>{in_folder(prev)}</from><to>{x}</to></transition>) 
+              (<transition><duration>{transition_time}</duration><from>{in_folder(prev)}</from><to>{in_folder(x)}</to></transition>) 
              else List[Node]()
-           ) ++ (<static><duration>2.0</duration><file>{in_folder(x)}</file></static>) ++ _anim_xml(x,y)
+           ) ++ (<static><duration>{even_intervals}</duration><file>{in_folder(x)}</file></static>) ++ _anim_xml(x,y)
         }
         case Nil => List[Node]()
       }
@@ -83,7 +85,7 @@ object Main {
             first_10 map { println }
             // download photos parallelly
             val futures = first_10 map { url => future { Http((url) >>> (new FileOutputStream(get_file(url))) ) } }
-            XML.saveFull(folder + "/background-1.xml", anim_xml(get_file,first_10),"UTF-8", true, null)
+            XML.saveFull(folder + "/background-1.xml", anim_xml(get_file,first_10+first_10.head, each_time, wait_for_next_sync),"UTF-8", true, null)
             futures map { _() } // wait for download complete
             println("download completed")
             Thread.sleep(wait_for_next_sync)
