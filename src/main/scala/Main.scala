@@ -1,6 +1,7 @@
 
 import java.io.FileOutputStream
 
+import scala.xml._
 import scala.actors._
 import dispatch._
 import dispatch.liftjson._
@@ -35,24 +36,62 @@ object Main {
   var key = ""
   var folder = "/tmp"
 
-  def save_photo(url: String, dir: String) = (new Http)((url) >>> (new FileOutputStream(dir + "/" +  url.slice(url.lastIndexOf("/"),url.length))))
+  def save_photo(url: String, dir: String) = { 
+    def local_file = dir + "/" +  url.slice(url.lastIndexOf("/"),url.length)
+    (new Http)((url) >>> (new FileOutputStream(local_file)))
+    local_file
+  }
   
   def download_photos (count: int) = {
     var futures = List[Future[Any]]()
     for(p <- new Flickr(key).get_intersting_photos().photos.photo take count) {
       futures += Futures.future {save_photo(p.url_big, folder)}
     }
-    futures map { f: Future[Any] => f() }
+    val ret = futures map { f: Future[Any] => f() } 
     println("download complete")
+    ret.asInstanceOf[List[String]]
+  }
+  
+  def write_animation_xml(files: List[String]) = {
+    val start =  <starttime>
+                    <year>2009</year>
+                        <month>08</month>
+                        <day>04</day>
+                        <hour>00</hour>
+                        <minute>00</minute>
+                        <second>00</second>
+                </starttime>;
+    var xml:List[Node] = List()
+    var prev :String = null
+    for(img <- files) {
+      if(prev != null) {
+        xml ::= (<transition>
+                <duration>5.0</duration>
+                <from>{prev}</from>
+                <to>{img}</to>
+               </transition>)
+      }
+      xml ::=  <static>
+                  <duration>1795.0</duration>
+                  <file>{img}</file>
+                 </static>;
+      prev = img
+    }
+    <background>{start}{xml}</background>
   }
 
   def main(args: Array[String]) = {
     key = args(0)
     folder = args(1)
-    val sync_every = Integer.parseInt(args(2))
-    while(true) {
-      download_photos(2)
-      Thread.sleep(sync_every)
+    val each_time = Integer.parseInt(args(2))
+    val sync_every = Integer.parseInt(args(3))
+    var cond = true
+    while(cond) {
+      val downloaded = download_photos(each_time)
+      //val downloaded = List("abcd", "cdef", "ijkl")
+      XML.saveFull(folder + "/background-1.xml", write_animation_xml(downloaded),"UTF-8", true, null)
+      //Thread.sleep(sync_every)
+      cond = false
     }
   }
 
