@@ -74,16 +74,25 @@ object Main {
         )
       }}) take count
     
-      while(photos.size > 0) {
-        val first_10  = photos take 10
-        // download photos parallelly
-        val futures = first_10 map { url => future { Http((url) >>> (new FileOutputStream(get_file(url))) ) } }
-        XML.saveFull(folder + "/background-1.xml", anim_xml(get_file,first_10),"UTF-8", true, null)
-        futures map { _() } // wait for download complete
-        println("download completed")
-        photos drop 10
-        Thread.sleep(wait_for_next_sync)
+      val each_time = 10
+      def download_partial(list:List[String]) : List[String] = {
+        list match {
+          case List(_*) => {
+            val first_10  = list take each_time
+            println ("downloading...")
+            first_10 map { println }
+            // download photos parallelly
+            val futures = first_10 map { url => future { Http((url) >>> (new FileOutputStream(get_file(url))) ) } }
+            XML.saveFull(folder + "/background-1.xml", anim_xml(get_file,first_10),"UTF-8", true, null)
+            futures map { _() } // wait for download complete
+            println("download completed")
+            Thread.sleep(wait_for_next_sync)
+            download_partial(list drop each_time)
+          }
+        }
       }
+
+      download_partial(photos)
     }
   }
 }
