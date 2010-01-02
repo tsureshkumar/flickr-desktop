@@ -1,0 +1,35 @@
+FlickrWallPaper
+----------------
+
+This project is a small tool that I wrote to automatically download
+the interesting pictures from Flickr and save it in a folder on the
+linux machine. This also generates an xml file which the gnome
+wallpaper changer uses to slide through the images.
+
+This project is also started so that I can learn scala, databinder's
+http client library, etc.
+
+Compile
+-------
+You need to install simple-build-tool[1] to compile the project. 
+
+clone this git repositary. run sbt at the root folder. 
+
+> compile
+
+compiles the project.
+
+Running
+-------
+You need to have a flickr api key to run this tool. Visit Flickr's
+appgarden to get a key for you.
+
+This is how you need to run this tool
+
+sbt
+> run <flickr.key> <folder.to.save> <number.of.photos.to.download> <wait.for.next.sync.in.ms>
+
+
+References
+----------
+[1] http://code.google.com/p/simple-build-tool/
